@@ -1,0 +1,17 @@
+{% include "includes/head.jinja" %}
+{% include "includes/nav.jinja" %}
+<div class="content">
+    <div class="content-header">
+        <h1>IDA System</h1>
+    </div>
+
+    {% if session['uuid'] and session['username'] %}
+        <h2>Welcome, {{ session['username'] }}</h2>
+        <p>Please select a view from the navbar above</p>
+    {% else %}
+        <h2>Please log in</h2>
+        <a href="{{ url_for('pages.login') }}" class="btn-primary br">Login</a>
+    {% endif %}
+    {% include "includes/messages.jinja" %}
+</div>
+{% include "includes/footer.jinja" %}

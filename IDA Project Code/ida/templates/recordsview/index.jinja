@@ -1,0 +1,117 @@
+{% include "includes/head.jinja" %}
+{% include "includes/nav.jinja" %}
+<div class="content">
+    <div class="content-header">
+        <h1>IDA System: Records</h1>
+    </div>
+    
+    {% if session['uuid'] and session['username'] %}
+        {% if data %}
+            <table id="item-table" class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Created At</th>
+                        <th>Revised At</th>
+                        <th>File</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="item-table-body">
+                    {% for item in data %}
+                        <tr>
+                            <td>{{ item['id'] }}</td>
+                            <td>{{ item['name'] }}</td>
+                            <td>{{ item['created_at'] }}</td>
+                            <td>{{ item['revised_at'] }}</td>
+                            <td>{{ item['file'] }}</td>
+                            <td class="flex">
+                            
+                                <button class="btn-action br" href="#">Edit</button>
+                                {% if session['is_admin'] %}
+                                    &nbsp;|&nbsp;<button data-id="{{ item['id'] }}" id="item-delete" type="submit" class="btn-action-warn br">Delete</button>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p class="info-message br">No data found.</p>
+        {% endif %}
+    {% else %}
+        <script>window.location.href = "{{ url_for('pages.login') }}";</script>
+    {% endif %}
+
+    {% include "includes/messages.jinja" %}
+</div>
+{% include "includes/footer.jinja" %}
+
+<script>
+    var deleteButtons = document.querySelectorAll("#item-delete");
+
+
+    function reloadTable() {
+        var xhr = new XMLHttpRequest();
+
+        xhr.open("GET", "/records", true);
+        xhr.setRequestHeader("Content-Type", "application/json");
+        xhr.onload = function () {
+            if (xhr.status === 200) {
+                var tableBody = document.getElementById("item-table-body");
+                tableBody.innerHTML = '';
+                var data = JSON.parse(xhr.responseText);
+
+                for (var i = 0; i < data.length; i++) {
+                    var row = document.createElement("tr");
+                    row.innerHTML = `
+                        <td>${data[i].id}</td>
+                        <td>${data[i].name}</td>
+                        <td>${data[i].created_at}</td>
+                        <td>${data[i].revised_at}</td>
+                        <td>${data[i].file}</td>
+                        <td class="flex">
+                            <button class="btn-action br" href="#">Edit</button>
+                            {% if session['is_admin'] %}
+                                &nbsp;|&nbsp;<button id="item-delete" type="submit" class="btn-action-warn br">Delete</button>
+                            {% endif %}
+                        </td>
+                    `;
+                }
+            }
+        };
+    }
+
+    deleteButtons.forEach((button) => {
+        button.addEventListener("click", (e) => {
+            e.preventDefault();
+            var id = e.target.getAttribute('data-id');
+            button.disabled = true;
+
+
+
+            var xhr = new XMLHttpRequest();
+            xhr.open("DELETE", `/records/${id}`, true);
+            xhr.setRequestHeader("Content-Type", "application/json");
+            xhr.setRequestHeader("X-UUID", "{{ session['uuid'] }}")
+            xhr.setRequestHeader("X-USERNAME", "{{ session['username'] }}")
+            xhr.setRequestHeader("X-IS-ADMIN", "{{ session['is_admin'] }}")
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === XMLHttpRequest.DONE) {
+                    if (xhr.status === 200) {
+                        // button is inside form, inside td, inside tr
+                        var row = button.parentNode.parentNode;
+                        // selecting the tbody element, and removing the row
+                        row.parentNode.removeChild(row);
+                    } else {
+                        // refresh the table
+                        reloadTable();
+                    }
+                }
+            };
+            xhr.send();
+        });
+    });
+
+</script>

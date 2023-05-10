@@ -1,0 +1,31 @@
+<nav>
+  <span class="nav-item text-display"
+    ><a href="{{ url_for('pages.home') }}" class="nav-title">IDA</a></span
+  >
+  {% if session['username'] %}
+  <div class="nav-item nav-item-container">
+    <div class="nav-item nav-item-subcontainer">
+      <a href="{{ url_for('pages.records_view') }}" class="nav-item nav-link btn-primary-rev br">🗃️ Records</a>
+      {% if session['is_admin'] %}
+        <a href="{{ url_for('pages.users_view') }}" class="nav-item nav-link btn-primary-rev br">👤 Users</a>
+        <a href="{{ url_for('pages.logs_view') }}" class="nav-item nav-link btn-primary-rev br">🔏 Logs</a>
+      {% endif %}
+    </div>
+
+    <div class="nav-item nav-item-subcontainer">
+      <p class="nav-item nav-profile br nocursor">🧑‍🚀 {{ session['username'] }}</p>
+      <a href="" class="nav-item nav-link btn-primary-rev br" onclick="location.reload();">🔁 Refresh</a>
+      <a
+        href="{{ url_for('pages.logout') }}"
+        class="nav-item nav-link btn-logout br"
+        >👋 Logout</a>
+    </div>
+
+  </div>
+  {% endif %}
+</nav>
+{% if session['is_admin'] %}
+  <div class="nav-status-bar nocursor">
+    <span>⚠️&nbsp;</span><p>This is an administrative session</p><span>&nbsp;⚠️</span>
+  </div>
+{% endif %}
